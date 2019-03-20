@@ -10,7 +10,8 @@
   },
   "scripts": {
     "test": "exit 0",
-    "build": "webpack --config config/webpack.prod.js --progress --profile --bail --allow-js"
+    "build": "webpack --config config/webpack.prod.js --progress --profile --bail --allow-js",
+    "build-ghpage": "webpack --config webpack.prod.js --progress --profile --bail --allow-js"
   },
   "author": "Andrew Valleteau",
   "license": "MIT",
