@@ -22,17 +22,17 @@ const selectData = [
     {value: 15, label: 'yolbn'},
 ];
 const rowDatas = [
-    {make: null, model: null, price: null},
-    {make: null, model: null, price: null},
-    {make: null, model: null, price: null},
-    {make: null, model: null, price: null},
-    {make: null, model: null, price: null},
-    {make: null, model: null, price: null},
-    {make: null, model: null, price: null},
+    {make: null, model: null, price: null, country: null,  city: null},
+    {make: null, model: null, price: null, country: null,  city: null},
+    {make: null, model: null, price: null, country: null,  city: null},
+    {make: null, model: null, price: null, country: null,  city: null},
+    {make: null, model: null, price: null, country: null,  city: null},
+    {make: null, model: null, price: null, country: null,  city: null},
+    {make: null, model: null, price: null, country: null,  city: null},
 ];
 const columnDefs = [
     {
-        headerName: "Make",
+        headerName: "Already present data selector",
         field: "make",
         cellEditor: AutocompleteSelectCellEditor,
         cellEditorParams: {
@@ -59,6 +59,83 @@ const columnDefs = [
     {
         headerName: "Price",
         field: "price",
+        editable: true,
+    },
+    {
+        headerName: "Ajax country request",
+        field: "country",
+        cellEditor: AutocompleteSelectCellEditor,
+        cellEditorParams: {
+            autocomplete: {
+                fetch: (cellEditor, text, update) => {
+                    let match = text.toLowerCase() || cellEditor.eInput.value.toLowerCase();
+                    let xmlHttp = new XMLHttpRequest();
+                    xmlHttp.onreadystatechange = () => {
+                        if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                            let data = JSON.parse(xmlHttp.responseText);
+                            let items = data.map(d => ({ value: d.numericCode, label: d.name, group: d.region }));
+                            update(items);
+                        }
+                        if (xmlHttp.status === 404) {
+                            update(false);
+                        }
+                    };
+                    xmlHttp.open("GET", `https://restcountries.eu/rest/v2/name/${match}`, true);
+                    xmlHttp.send(null);
+                },
+            },
+            placeholder: 'Select a country',
+        },
+        valueFormatter: (params) => {
+            if (params.value) {
+                return params.value.label || params.value.value || params.value;
+            }
+            return "";
+        },
+        editable: true,
+    },
+    {
+        headerName: "Capital slow request with spinner",
+        field: "city",
+        cellEditor: AutocompleteSelectCellEditor,
+        cellEditorParams: {
+            autocomplete: {
+                fetch: (cellEditor, text, update) => {
+                    let spinnertimeout;
+                    let match = text.toLowerCase() || cellEditor.eInput.value.toLowerCase();
+                    let spinner = document.createElement('i');
+                    spinner.className = 'ag-cell-editor-autocomplete-spinner';
+                    let editor = document.getElementsByClassName('autocomplete')[0];
+                    console.log('editor: ', editor);
+                    if (editor && !editor.querySelector('i')) {
+                        spinnertimeout = setTimeout(() => editor.prepend(spinner), 200);
+                    }
+                    let xmlHttp = new XMLHttpRequest();
+                    xmlHttp.onreadystatechange = () => {
+                        clearTimeout(spinnertimeout);
+                        if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                            let data = JSON.parse(xmlHttp.responseText);
+                            let items = data.map(d => ({ value: d.capital, label: d.capital }));
+                            update(items);
+                        }
+                        if (xmlHttp.status === 404) {
+                            update(false);
+                        }
+                    };
+                    setTimeout(() => {
+                        xmlHttp.open("GET", `https://restcountries.eu/rest/v2/capital/${match}`, true);
+                        xmlHttp.send(null);
+                    }, 500);
+                },
+            },
+            placeholder: 'Select a capital',
+        },
+        valueFormatter: (params) => {
+            if (params.value) {
+                return params.value.label || params.value.value || params.value;
+            }
+            return "";
+        },
         editable: true,
     },
 ];
